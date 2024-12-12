@@ -131,7 +131,18 @@ returns an int to represent whether this move is valid:
             push star off goal
 */
 int validMove(int direction, Player *p, int *map){
-    /* === TO DO === */
+    int nextX = p->x + dX[direction];
+    int nextY = p->y + dY[direction];
+    int nextPos = *(map + nextY * MAP_COLS + nextX);
+
+    switch (nextPos) {
+        case 0:  // Empty square
+        case 3:  // Star
+        case 4:  // Goal square
+            return 1;  // Valid move
+        case 5:  // Star on goal
+            return 1;  // Valid move
+        default:
     return 0;
 }  // end validMove
 
@@ -153,7 +164,33 @@ takes direction (of move), Player, and map
 returns: nothing
 */
 void movePlayer(int direction, Player *p, int *map){
-    /* === TO DO === */
+    int nextX = p->x + dX[direction];
+    int nextY = p->y + dY[direction];
+    int nextPos = *(map + nextY * MAP_COLS + nextX);
+
+    // Update player's previous square value
+    p->prevSquareValue = *(map + p->y * MAP_COLS + p->x);
+
+    // Move player to the next position
+    if (nextPos == 3 || nextPos == 5) {  // If next position is a star
+        int nextStarX = nextX + dX[direction];
+        int nextStarY = nextY + dY[direction];
+        int nextStarPos = *(map + nextStarY * MAP_COLS + nextStarX);
+
+        // Move the star if the next star position is empty or a goal
+        if (nextStarPos == 0 || nextStarPos == 4) {
+            *(map + nextStarY * MAP_COLS + nextStarX) = (nextStarPos == 4) ? 5 : 3;
+            numStarsSolved += (nextStarPos == 4) ? -1 : 0;  // Adjust star count
+        }
+    }
+
+    // Update player's position
+    p->x = nextX;
+    p->y = nextY;
+
+    // Update map with player's new position
+    *(map + p->y * MAP_COLS + p->x) = (nextPos == 4) ? 6 : 2;  // Check if goal square
+    *(map + nextY * MAP_COLS + nextX) = (nextPos == 3 || nextPos == 5) ? 0 : 2;  // Empty the previous player position
 
     return;
 }  // end movePlayer()
